@@ -1,27 +1,35 @@
 // Vercel API Route: /api/business-hours
-import { sql, initDatabase } from '../lib/neon-db.js';
+import { sql, initDatabase, setTenantContext } from '../lib/neon-db.js';
+import { 
+  resolveTenant, 
+  validateTenant, 
+  setCorsHeaders, 
+  handlePreflight 
+} from '../lib/tenant-middleware.js';
 
 export default async function handler(req, res) {
   // Set CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+  setCorsHeaders(res);
 
   // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
+  if (handlePreflight(req, res)) return;
 
   try {
     // Initialize database if needed
     await initDatabase();
     
-    // Get business hours from database
+    // Resolve tenant context
+    await resolveTenant(req, res, () => {});
+    
+    // Validate tenant
+    validateTenant(req, res, () => {});
+    
+    if (res.headersSent) return; // If tenant validation failed
+    
+    // Set tenant context for RLS
+    await setTenantContext(req.tenant_id);
+    
+    // Get business hours from database with tenant isolation
     const result = await sql`
       SELECT day_of_week, open_time, close_time, is_closed
       FROM business_hours
@@ -41,26 +49,36 @@ export default async function handler(req, res) {
       success: true,
       data: {
         businessHours
+      },
+      tenant: {
+        id: req.tenant.id,
+        name: req.tenant.name,
+        subdomain: req.tenant.subdomain
       }
     });
   } catch (error) {
     console.error('Database error:', error);
     
-    // Fallback to static data
+    // Fallback to static data for demo tenant
     const businessHours = [
-      { day: 'monday', open: '09:00', close: '22:00', isOpen: true },
-      { day: 'tuesday', open: '09:00', close: '22:00', isOpen: true },
-      { day: 'wednesday', open: '09:00', close: '22:00', isOpen: true },
-      { day: 'thursday', open: '09:00', close: '22:00', isOpen: true },
-      { day: 'friday', open: '09:00', close: '23:00', isOpen: true },
-      { day: 'saturday', open: '10:00', close: '23:00', isOpen: true },
-      { day: 'sunday', open: '10:00', close: '21:00', isOpen: true }
+      { day: 'sunday', open: '10:00', close: '22:00', isOpen: true },
+      { day: 'monday', open: '10:00', close: '22:00', isOpen: true },
+      { day: 'tuesday', open: '10:00', close: '22:00', isOpen: true },
+      { day: 'wednesday', open: '10:00', close: '22:00', isOpen: true },
+      { day: 'thursday', open: '10:00', close: '22:00', isOpen: true },
+      { day: 'friday', open: '10:00', close: '22:00', isOpen: true },
+      { day: 'saturday', open: '10:00', close: '22:00', isOpen: true }
     ];
 
     res.status(200).json({
       success: true,
       data: {
         businessHours
+      },
+      tenant: {
+        id: 'demo-tenant-id',
+        name: 'Demo Karaoke',
+        subdomain: 'demo'
       }
     });
   }

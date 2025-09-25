@@ -1,23 +1,20 @@
 // Vercel API Route: /api/auth/login
-import { sql, initDatabase } from '../lib/neon-db.js';
+import { sql, initDatabase, setTenantContext } from '../lib/neon-db.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { 
+  resolveTenant, 
+  validateTenant, 
+  setCorsHeaders, 
+  handlePreflight 
+} from '../lib/tenant-middleware.js';
 
 export default async function handler(req, res) {
   // Set CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+  setCorsHeaders(res);
 
   // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
+  if (handlePreflight(req, res)) return;
 
   // Only allow POST requests
   if (req.method !== 'POST') {
@@ -31,6 +28,14 @@ export default async function handler(req, res) {
     // Initialize database if needed
     await initDatabase();
     
+    // Resolve tenant context
+    await resolveTenant(req, res, () => {});
+    
+    // Validate tenant
+    validateTenant(req, res, () => {});
+    
+    if (res.headersSent) return; // If tenant validation failed
+    
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -40,11 +45,15 @@ export default async function handler(req, res) {
       });
     }
 
-    // Find user in database
+    // Set tenant context for RLS
+    await setTenantContext(req.tenant_id);
+
+    // Find user in database with tenant context
     const result = await sql`
-      SELECT id, email, password, name, role
-      FROM users
-      WHERE email = ${email}
+      SELECT u.id, u.email, u.password, u.name, tu.role, tu.permissions
+      FROM users u
+      JOIN tenant_users tu ON u.id = tu.user_id
+      WHERE u.email = ${email} AND tu.tenant_id = ${req.tenant_id}
     `;
 
     if (result.length === 0) {
@@ -65,12 +74,15 @@ export default async function handler(req, res) {
       });
     }
 
-    // Generate JWT token
+    // Generate JWT token with tenant context
     const token = jwt.sign(
       { 
         id: user.id, 
         email: user.email, 
-        role: user.role 
+        role: user.role,
+        tenant_id: req.tenant_id,
+        tenant_name: req.tenant.name,
+        tenant_subdomain: req.tenant.subdomain
       },
       process.env.JWT_SECRET || 'fallback-secret',
       { expiresIn: '24h' }
@@ -83,7 +95,14 @@ export default async function handler(req, res) {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role
+        role: user.role,
+        permissions: user.permissions
+      },
+      tenant: {
+        id: req.tenant.id,
+        name: req.tenant.name,
+        subdomain: req.tenant.subdomain,
+        plan_type: req.tenant.plan_type
       }
     });
   } catch (error) {
@@ -97,10 +116,17 @@ export default async function handler(req, res) {
         success: true,
         token: 'demo-token-123',
         user: {
-          id: 1,
+          id: 'demo-user-1',
           email: 'demo@example.com',
-          name: 'Demo User',
-          role: 'admin'
+          name: 'Demo Admin',
+          role: 'admin',
+          permissions: { all: true }
+        },
+        tenant: {
+          id: 'demo-tenant-id',
+          name: 'Demo Karaoke',
+          subdomain: 'demo',
+          plan_type: 'professional'
         }
       });
     } else {

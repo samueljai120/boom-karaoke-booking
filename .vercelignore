@@ -1,0 +1,3 @@
+# Ignore API routes during Vercel development
+# These are handled as serverless functions in production
+api/

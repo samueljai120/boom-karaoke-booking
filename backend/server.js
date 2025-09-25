@@ -30,7 +30,7 @@ import { tenantContext } from './middleware/tenant.js';
 import { subdomainRouter, resolveTenant, validateTenant, trackUsage } from './middleware/subdomain.js';
 
 // Load environment variables
-dotenv.config();
+dotenv.config({ path: '.env.local' });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

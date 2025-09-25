@@ -1,32 +1,40 @@
 // Vercel API Route: /api/rooms
-import { sql, initDatabase } from '../lib/neon-db.js';
+import { sql, initDatabase, setTenantContext } from '../lib/neon-db.js';
+import { 
+  resolveTenant, 
+  validateTenant, 
+  setCorsHeaders, 
+  handlePreflight 
+} from '../lib/tenant-middleware.js';
 
 export default async function handler(req, res) {
   // Set CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+  setCorsHeaders(res);
 
   // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
+  if (handlePreflight(req, res)) return;
 
   try {
     // Initialize database if needed
     await initDatabase();
     
-    // Get rooms from database
+    // Resolve tenant context
+    await resolveTenant(req, res, () => {});
+    
+    // Validate tenant
+    validateTenant(req, res, () => {});
+    
+    if (res.headersSent) return; // If tenant validation failed
+    
+    // Set tenant context for RLS
+    await setTenantContext(req.tenant_id);
+    
+    // Get rooms from database with tenant isolation
     const result = await sql`
       SELECT id, name, capacity, category, description, price_per_hour, is_active
       FROM rooms
       WHERE is_active = true
-      ORDER BY id
+      ORDER BY name
     `;
 
     const rooms = result.map(row => ({
@@ -41,21 +49,31 @@ export default async function handler(req, res) {
 
     res.status(200).json({
       success: true,
-      data: rooms
+      data: rooms,
+      tenant: {
+        id: req.tenant.id,
+        name: req.tenant.name,
+        subdomain: req.tenant.subdomain
+      }
     });
   } catch (error) {
     console.error('Database error:', error);
     
-    // Fallback to static data
+    // Fallback to static data for demo tenant
     const rooms = [
-      { id: 1, name: 'Room A', capacity: 4, category: 'Standard', isActive: true },
-      { id: 2, name: 'Room B', capacity: 6, category: 'Premium', isActive: true },
-      { id: 3, name: 'Room C', capacity: 8, category: 'VIP', isActive: true }
+      { id: 'demo-room-1', name: 'Room A', capacity: 4, category: 'Standard', isActive: true, pricePerHour: 25.00 },
+      { id: 'demo-room-2', name: 'Room B', capacity: 6, category: 'Premium', isActive: true, pricePerHour: 35.00 },
+      { id: 'demo-room-3', name: 'Room C', capacity: 8, category: 'VIP', isActive: true, pricePerHour: 50.00 }
     ];
 
     res.status(200).json({
       success: true,
-      data: rooms
+      data: rooms,
+      tenant: {
+        id: 'demo-tenant-id',
+        name: 'Demo Karaoke',
+        subdomain: 'demo'
+      }
     });
   }
 }

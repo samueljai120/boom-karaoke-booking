@@ -1,30 +1,67 @@
 // Vercel API Route: /api/auth/me
-export default function handler(req, res) {
+import { 
+  resolveTenant, 
+  validateTenant, 
+  setCorsHeaders, 
+  handlePreflight 
+} from '../lib/tenant-middleware.js';
+
+export default async function handler(req, res) {
   // Set CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+  setCorsHeaders(res);
 
   // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
+  if (handlePreflight(req, res)) return;
 
-  // Simple session check
-  res.status(200).json({
-    success: true,
-    data: {
-      user: {
-        id: 1,
-        email: 'demo@example.com',
-        name: 'Demo User',
-        role: 'admin'
+  try {
+    // Resolve tenant context
+    await resolveTenant(req, res, () => {});
+    
+    // Validate tenant
+    validateTenant(req, res, () => {});
+    
+    if (res.headersSent) return; // If tenant validation failed
+
+    // Return user and tenant info
+    res.status(200).json({
+      success: true,
+      data: {
+        user: {
+          id: 'demo-user-1',
+          email: 'demo@example.com',
+          name: 'Demo Admin',
+          role: 'admin',
+          permissions: { all: true }
+        },
+        tenant: {
+          id: req.tenant.id,
+          name: req.tenant.name,
+          subdomain: req.tenant.subdomain,
+          plan_type: req.tenant.plan_type
+        }
       }
-    }
-  });
+    });
+  } catch (error) {
+    console.error('Me endpoint error:', error);
+    
+    // Fallback response
+    res.status(200).json({
+      success: true,
+      data: {
+        user: {
+          id: 'demo-user-1',
+          email: 'demo@example.com',
+          name: 'Demo Admin',
+          role: 'admin',
+          permissions: { all: true }
+        },
+        tenant: {
+          id: 'demo-tenant-id',
+          name: 'Demo Karaoke',
+          subdomain: 'demo',
+          plan_type: 'professional'
+        }
+      }
+    });
+  }
 }
