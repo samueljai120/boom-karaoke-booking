@@ -8,7 +8,7 @@ const buildId = Date.now()
 export default defineConfig({
   plugins: [
     react(),
-    // Plugin to completely ignore API routes
+    // Plugin to completely ignore API routes during development
     {
       name: 'ignore-api-routes',
       load(id) {
