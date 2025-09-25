@@ -6,19 +6,7 @@ const buildId = Date.now()
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    // Plugin to completely ignore API routes during development
-    {
-      name: 'ignore-api-routes',
-      load(id) {
-        if (id.includes('/api/') || id.includes('\\api\\')) {
-          return 'export default {};'; // Return empty module
-        }
-        return null;
-      }
-    }
-  ],
+  plugins: [react()],
   server: {
     port: 3000,
     host: true,
@@ -38,14 +26,6 @@ export default defineConfig({
       include: [/node_modules/]
     },
     rollupOptions: {
-      // Exclude API routes from Vite build process (they are Vercel serverless functions)
-      external: (id) => {
-        // Exclude API routes from frontend bundle
-        if (id.includes('/api/') || id.startsWith('./api/') || id.startsWith('../api/')) {
-          return true;
-        }
-        return false;
-      },
       output: {
         manualChunks: (id) => {
           // Core React libraries
@@ -135,9 +115,9 @@ export default defineConfig({
   },
   define: {
     global: 'globalThis',
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+    'process.env': 'process.env',
   },
   optimizeDeps: {
     include: ['axios', 'react', 'react-dom']
-  },
+  }
 })
