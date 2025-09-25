@@ -3,6 +3,7 @@ export const mockData = {
   // Mock user data
   user: {
     id: 1,
+    email: 'demo@example.com',
     username: 'demo@example.com',
     name: 'Demo User',
     role: 'admin'
@@ -221,7 +222,10 @@ export const mockAPI = {
           resolve({
             success: true,
             data: {
-              user: mockData.user,
+              user: {
+                ...mockData.user,
+                email: credentials.email // Ensure email matches the login credentials
+              },
               token: 'mock-jwt-token-' + Date.now()
             }
           });

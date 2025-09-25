@@ -293,7 +293,7 @@ async function enableRowLevelSecurity(client) {
     await client.query(`
       CREATE POLICY tenant_isolation_policy ON ${table}
       FOR ALL TO PUBLIC
-      USING (tenant_id = current_setting('app.current_tenant_id')::UUID)
+      USING (tenant_id::text = current_setting('app.current_tenant_id', true))
     `);
   }
   
