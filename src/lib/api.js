@@ -89,8 +89,11 @@ const convertToFrontendFormat = (backendHours) => {
 // Auth API with smart fallback
 export const authAPI = {
   login: async (credentials) => {
-    // Try real API first, fallback to mock if needed
-    console.log('🔑 Attempting login with credentials:', credentials.email);
+    // For demo credentials, always use mock to ensure it works
+    if (credentials.email === 'demo@example.com' && credentials.password === 'demo123') {
+      console.log('🎯 Using mock API for demo login');
+      return mockAPI.login(credentials);
+    }
     
     // Check if we should use real API
     if (FORCE_REAL_API && FALLBACK_TO_MOCK) {

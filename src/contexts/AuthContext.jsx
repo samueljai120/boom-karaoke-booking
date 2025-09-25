@@ -19,44 +19,39 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const initAuth = async () => {
-      console.log('🔑 AuthContext: Initializing auth, token =', token);
       if (token) {
         try {
+          // Check if we have user data in localStorage first
+          const storedUser = localStorage.getItem('user');
+          if (storedUser) {
+            try {
+              const user = JSON.parse(storedUser);
+              setUser(user);
+              setLoading(false);
+              return;
+            } catch (e) {
+              console.error('Error parsing stored user:', e);
+            }
+          }
+          
           // Use authAPI for session check with smart fallback
           const response = await authAPI.getSession();
-          console.log('🔑 AuthContext: Session check response:', response);
           
           if (response.success) {
             setUser(response.data.user);
-            console.log('🔑 AuthContext: User set from session:', response.data.user);
           } else {
             // Session invalid, clear auth
-            console.log('🔑 AuthContext: Session invalid, clearing auth');
             localStorage.removeItem('authToken');
             localStorage.removeItem('user');
             setToken(null);
             setUser(null);
           }
         } catch (error) {
-          console.error('🔑 AuthContext: Session check failed:', error);
+          console.error('Session check failed:', error);
           // For demo purposes, don't clear auth on network errors
           // Just set loading to false so the app can continue
-          console.log('🔑 AuthContext: Using mock mode due to network error');
-          
-          // Try to get user from localStorage as fallback
-          const storedUser = localStorage.getItem('user');
-          if (storedUser) {
-            try {
-              const user = JSON.parse(storedUser);
-              setUser(user);
-              console.log('🔑 AuthContext: Restored user from localStorage:', user);
-            } catch (e) {
-              console.error('🔑 AuthContext: Failed to parse stored user:', e);
-            }
-          }
+          console.log('Using mock mode due to network error');
         }
-      } else {
-        console.log('🔑 AuthContext: No token found');
       }
       setLoading(false);
     };
@@ -66,31 +61,35 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
-      console.log('🔑 AuthContext: Starting login process...');
+      console.log('🔐 Starting login process for:', credentials.email);
+      
       // Use the authAPI which has smart fallback to mock data
       const response = await authAPI.login(credentials);
-      console.log('🔑 AuthContext: Login response:', response);
+      
+      console.log('📋 Login response:', response);
       
       if (response.success) {
         const { token, user } = response.data;
-        console.log('🔑 AuthContext: Login successful, setting user:', user);
+        
+        console.log('✅ Login successful, storing auth data');
         
         localStorage.setItem('authToken', token);
         localStorage.setItem('user', JSON.stringify(user));
         setToken(token);
         setUser(user);
         
-        console.log('🔑 AuthContext: User state updated, returning success');
+        console.log('🎯 User state updated:', user);
+        
         return { success: true };
       } else {
-        console.log('🔑 AuthContext: Login failed:', response.error);
+        console.log('❌ Login failed:', response.error);
         return {
           success: false,
           error: response.error || 'Login failed'
         };
       }
     } catch (error) {
-      console.error('🔑 AuthContext: Login error:', error);
+      console.error('❌ Login error:', error);
       return {
         success: false,
         error: 'Login failed - please try again'
