@@ -1,0 +1,7 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+make sure the decision is optimal, less bug, thinking on a larger scale.
+make sure to review the entire document after editing, make sure no lint errors, no logic issue, outdated labels, duplicates.

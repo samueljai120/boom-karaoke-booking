@@ -1,0 +1,22 @@
+{
+  "name": "boom-karaoke-backend-minimal",
+  "version": "1.0.0",
+  "description": "Minimal Backend API for Boom Karaoke booking system",
+  "main": "server-minimal-railway.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server-minimal-railway.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  },
+  "keywords": [
+    "karaoke",
+    "booking",
+    "api",
+    "express"
+  ],
+  "author": "Boom Karaoke Team",
+  "license": "MIT"
+}

@@ -1,0 +1,28 @@
+{
+  "name": "boom-booking-backend-simple",
+  "version": "1.0.0",
+  "description": "Simple backend deployment for Boom Karaoke booking system",
+  "main": "deploy-simple.js",
+  "type": "module",
+  "scripts": {
+    "start": "node deploy-simple.js",
+    "dev": "node deploy-simple.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "karaoke",
+    "booking",
+    "api",
+    "express",
+    "backend"
+  ],
+  "author": "Boom Karaoke Team",
+  "license": "MIT"
+}

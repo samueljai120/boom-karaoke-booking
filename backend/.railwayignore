@@ -1,0 +1,13 @@
+# Ignore frontend files
+../src/
+../dist/
+../node_modules/
+../package.json
+../package-lock.json
+../vite.config.js
+../tailwind.config.js
+../index.html
+
+# Ignore documentation
+../*.md
+../docs/

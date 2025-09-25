@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: boom-booking-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node server-railway.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: CORS_ORIGIN
+        value: https://boom-booking-frontend.vercel.app
+
+databases:
+  - name: boom-booking-db
+    plan: free
+    databaseName: boom_booking
+    user: boom_user

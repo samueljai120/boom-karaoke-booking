@@ -1,0 +1,30 @@
+# Railway Environment Variables Template
+# Copy these to your Railway project settings
+
+# Database
+DATABASE_URL=postgresql://username:password@host:port/database
+DB_HOST=your-postgres-host
+DB_PORT=5432
+DB_NAME=boom_booking
+DB_USER=your-username
+DB_PASSWORD=your-password
+
+# Server
+PORT=5001
+NODE_ENV=production
+
+# Security
+JWT_SECRET=your-super-secure-jwt-secret-key-here
+CORS_ORIGIN=https://boom-booking-frontend.vercel.app
+
+# Email (optional)
+EMAIL_PROVIDER=gmail
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-app-password
+
+# Stripe (optional)
+STRIPE_SECRET_KEY=sk_test_your-stripe-secret-key
+STRIPE_PUBLISHABLE_KEY=pk_test_your-stripe-publishable-key
+
+# Redis (optional)
+REDIS_URL=redis://localhost:6379

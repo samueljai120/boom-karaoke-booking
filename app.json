@@ -1,0 +1,38 @@
+{
+  "name": "Boom Booking Backend",
+  "description": "Backend API for Boom Booking platform",
+  "repository": "https://github.com/your-username/Advanced-Calendar",
+  "logo": "https://via.placeholder.com/150",
+  "keywords": ["node", "express", "booking", "api"],
+  "image": "heroku/nodejs",
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "env": {
+    "NODE_ENV": {
+      "description": "Node environment",
+      "value": "production"
+    },
+    "PORT": {
+      "description": "Port for the app",
+      "value": "5001"
+    },
+    "CORS_ORIGIN": {
+      "description": "CORS origin for frontend",
+      "value": "https://boom-booking-frontend.vercel.app"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql:mini"
+    }
+  ]
+}
