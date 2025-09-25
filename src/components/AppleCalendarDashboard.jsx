@@ -31,6 +31,8 @@ import TraditionalSchedule from './TraditionalSchedule';
 import LoadingSkeleton from './LoadingSkeleton';
 import AIBookingAssistant from './AIBookingAssistant';
 import AIAnalyticsDashboard from './AIAnalyticsDashboard';
+import BottomMenu from './BottomMenu';
+import ProfilePage from './ProfilePage';
 import toast from 'react-hot-toast';
 import {
   DndContext,
@@ -367,6 +369,7 @@ const AppleCalendarDashboard = () => {
   const [showCustomerBase, setShowCustomerBase] = useState(false);
   const [showAIBooking, setShowAIBooking] = useState(false);
   const [showAIAnalytics, setShowAIAnalytics] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { settings } = useSettings();
   const { businessHours, getBusinessHoursForDay, getTimeSlotsForDay, isWithinBusinessHours } = useBusinessHours();
@@ -1703,118 +1706,18 @@ const AppleCalendarDashboard = () => {
           
         </div>
 
-        {/* Bottom Sticky Actions: AI Features + Analytics + Customer Base + Instructions + Settings */}
-        <div className="mt-auto border-t border-gray-200 p-2 space-y-2">
-          {sidebarOpen ? (
-            <>
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start text-purple-600 hover:text-purple-700 hover:bg-purple-50"
-                onClick={() => setShowAIBooking(true)}
-              >
-                <Brain className="w-4 h-4 mr-3" />
-                AI Assistant
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                onClick={() => setShowAIAnalytics(true)}
-              >
-                <Zap className="w-4 h-4 mr-3" />
-                AI Analytics
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start"
-                onClick={() => setShowAnalytics(true)}
-              >
-                <BarChart3 className="w-4 h-4 mr-3" />
-                Analytics
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start"
-                onClick={() => setShowCustomerBase(true)}
-              >
-                <Users className="w-4 h-4 mr-3" />
-                Customer Base
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start"
-                onClick={() => setShowInstructions(true)}
-              >
-                <CalendarIcon className="w-4 h-4 mr-3" />
-                Instructions
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start"
-                onClick={() => setShowSettings(true)}
-              >
-                <Settings className="w-4 h-4 mr-3" />
-                Settings
-              </Button>
-            </>
-          ) : (
-            <div className="flex flex-col items-center space-y-2">
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="h-12 w-12 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
-                onClick={() => setShowAIBooking(true)}
-                title="AI Assistant"
-              >
-                <Brain className="w-6 h-6" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="h-12 w-12 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                onClick={() => setShowAIAnalytics(true)}
-                title="AI Analytics"
-              >
-                <Zap className="w-6 h-6" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="h-12 w-12"
-                onClick={() => setShowAnalytics(true)}
-                title="Analytics"
-              >
-                <BarChart3 className="w-6 h-6" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="h-12 w-12"
-                onClick={() => setShowCustomerBase(true)}
-                title="Customer Base"
-              >
-                <Users className="w-6 h-6" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="h-12 w-12"
-                onClick={() => setShowInstructions(true)}
-                title="Instructions"
-              >
-                <CalendarIcon className="w-6 h-6" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                className="h-12 w-12"
-                onClick={() => setShowSettings(true)}
-                title="Settings"
-              >
-                <Settings className="w-6 h-6" />
-              </Button>
-            </div>
-          )}
-        </div>
+        {/* Bottom Menu - Replaced individual buttons with unified menu */}
+        <BottomMenu
+          sidebarOpen={sidebarOpen}
+          onShowAnalytics={() => setShowAnalytics(true)}
+          onShowCustomerBase={() => setShowCustomerBase(true)}
+          onShowInstructions={() => setShowInstructions(true)}
+          onShowSettings={() => setShowSettings(true)}
+          onShowAIBooking={() => setShowAIBooking(true)}
+          onShowAIAnalytics={() => setShowAIAnalytics(true)}
+          onShowTutorial={handleTutorialClick}
+          onShowProfile={() => setShowProfile(true)}
+        />
       </div>
 
       {/* Main Content */}
@@ -2141,6 +2044,12 @@ const AppleCalendarDashboard = () => {
       <InstructionsModal
         isOpen={showInstructions}
         onClose={() => setShowInstructions(false)}
+      />
+      
+      {/* Profile Page Modal */}
+      <ProfilePage
+        isOpen={showProfile}
+        onClose={() => setShowProfile(false)}
       />
       
       {/* AI Booking Assistant Modal */}

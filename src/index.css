@@ -489,3 +489,63 @@
   background-size: 200% 100%;
   animation: gradient-shift 2s ease infinite;
 }
+
+/* Prevent schedule grid highlighting from menu interactions */
+.schedule-grid {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Menu interaction prevention */
+.menu-interaction-prevention {
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Disable sticky/fixed positioning when menu is open, but preserve layout */
+body.menu-open [class*="sticky"],
+body.menu-open [class*="fixed"] {
+  position: static !important;
+}
+
+/* Re-enable fixed positioning for menu elements only */
+body.menu-open .menu-fixed {
+  position: fixed !important;
+}
+
+/* Keep digital clock fixed positioning */
+body.menu-open .digital-clock-mobile {
+  position: fixed !important;
+}
+
+/* Keep time scale visible */
+body.menu-open [class*="time-scale"],
+body.menu-open [class*="time-header"],
+body.menu-open [class*="time-labels"] {
+  position: fixed !important;
+  z-index: 999998 !important;
+}
+
+/* Keep time indicator (red line) visible */
+body.menu-open [class*="time-indicator"],
+body.menu-open [class*="current-time"],
+body.menu-open [class*="time-line"] {
+  position: fixed !important;
+  z-index: 999998 !important;
+}
+
+/* Preserve grid layout and visual appearance */
+body.menu-open .schedule-grid,
+body.menu-open .schedule-grid * {
+  position: static !important;
+  transform: none !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+}

@@ -115,7 +115,7 @@ export default defineConfig({
   },
   define: {
     global: 'globalThis',
-    'process.env': 'process.env',
+    'process.env': '{}',
   },
   optimizeDeps: {
     include: ['axios', 'react', 'react-dom']
